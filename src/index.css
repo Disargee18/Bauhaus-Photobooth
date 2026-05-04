@@ -1,0 +1,93 @@
+@import url('https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Special+Elite&display=swap');
+@import "tailwindcss";
+
+@theme {
+  --font-bebas: "Bebas Neue", sans-serif;
+  --font-special: "Special Elite", monospace;
+
+  --color-bauhaus-black: #0a0a0a;
+  --color-bauhaus-white: #f5f0e8;
+  --color-bauhaus-red: #8B0000;
+  --color-bauhaus-navy: #1a2744;
+  --color-bauhaus-yellow: #f5e6a3;
+  --color-bauhaus-sage: #c2c9a0;
+}
+
+html, body {
+  margin: 0;
+  padding: 0;
+  background-color: var(--color-bauhaus-white);
+  color: var(--color-bauhaus-black);
+  min-height: 100vh;
+}
+
+/* Global grain texture */
+body::after {
+  content: '';
+  position: fixed;
+  inset: 0;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)'/%3E%3C/svg%3E");
+  opacity: 0.08;
+  pointer-events: none;
+  z-index: 9999;
+}
+
+/* Photo filters */
+.filter-normal { filter: none; }
+.filter-bw { filter: grayscale(100%) contrast(120%); }
+.filter-soft { filter: brightness(110%) contrast(85%) sepia(20%); }
+
+/* Bauhaus Utility Classes */
+.bauhaus-border {
+  border: 3px solid var(--color-bauhaus-black);
+}
+
+.bauhaus-shadow {
+  box-shadow: 6px 6px 0px 0px var(--color-bauhaus-black);
+}
+
+.bauhaus-button {
+  border: 3px solid var(--color-bauhaus-black);
+  box-shadow: 4px 4px 0px 0px var(--color-bauhaus-black);
+  border-radius: 0;
+  text-transform: uppercase;
+  font-family: var(--font-bebas);
+  cursor: pointer;
+  background-color: var(--color-bauhaus-white);
+  color: var(--color-bauhaus-black);
+  transition: transform 0.1s;
+}
+
+.bauhaus-button:active {
+  transform: translate(2px, 2px);
+  box-shadow: 2px 2px 0px 0px var(--color-bauhaus-black);
+}
+
+/* Print specific styles */
+@media print {
+  body {
+    background-color: white !important;
+  }
+  
+  body::after {
+    display: none;
+  }
+
+  /* Hide everything except print area */
+  body * {
+    visibility: hidden;
+  }
+
+  #print-area, #print-area * {
+    visibility: visible;
+  }
+
+  #print-area {
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 100%;
+    display: flex;
+    justify-content: center;
+  }
+}
