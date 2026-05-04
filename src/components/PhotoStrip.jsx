@@ -52,7 +52,7 @@ export default function PhotoStrip({ photos, activeFilter }) {
     >
       <div
         ref={stripRef}
-        className="flex flex-col items-center print:!transform-none"
+        className="flex flex-col items-center print:!transform-none print:break-inside-avoid"
         style={{ transform: `scale(${scaleInfo.scale})`, transformOrigin: 'top center' }}
       >
         {/* Decorative top shape */}
@@ -62,21 +62,21 @@ export default function PhotoStrip({ photos, activeFilter }) {
         </svg>
 
         <div
-          className="p-4 pb-16 bauhaus-border bauhaus-shadow relative w-64 md:w-80 print:w-56 transition-colors duration-500"
+          className="p-4 pb-16 bauhaus-border bauhaus-shadow relative w-64 md:w-80 print:w-48 transition-colors duration-500 print:break-inside-avoid"
           style={{ backgroundColor: activeBg }}
         >
           <h2 className="font-[var(--font-bebas)] text-3xl text-center mb-4 tracking-widest border-b-2 border-black pb-2">
             B/H BOOTH
           </h2>
 
-          <div className="flex flex-col gap-4">
+          <div className="flex flex-col gap-4 print:block">
             {photos.map((photo, i) => (
               <motion.div
                 key={i}
                 initial={{ x: 100, opacity: 0 }}
                 animate={{ x: 0, opacity: 1 }}
                 transition={{ type: 'spring', stiffness: 200, damping: 20, delay: i * 0.1 }}
-                className="relative group cursor-pointer"
+                className="relative group cursor-pointer print:mb-4 print:break-inside-avoid"
                 onClick={() => downloadImage(photo, i)}
                 title="Click to download image"
               >
