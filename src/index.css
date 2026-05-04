@@ -78,43 +78,35 @@ body::after {
 /* Print specific styles */
 @media print {
   @page {
-    margin: 1cm;
+    margin: 0.5cm;
     size: auto;
   }
 
   html,
   body {
-    height: 100vh;
-    min-height: 100vh;
+    height: auto !important;
+    min-height: 0 !important;
     background-color: white !important;
-    margin: 0;
-    padding: 0;
-    overflow: hidden;
+    margin: 0 !important;
+    padding: 0 !important;
+    overflow: visible !important;
   }
 
   body::after {
     display: none;
   }
 
-  /* Hide everything except print area */
-  body * {
-    visibility: hidden;
+  #print-area {
+    width: 100%;
+    display: flex !important;
+    justify-content: center;
+    margin: 0 auto;
   }
 
   #print-area,
   #print-area * {
-    visibility: visible;
     -webkit-print-color-adjust: exact !important;
     print-color-adjust: exact !important;
     color-adjust: exact !important;
-  }
-
-  #print-area {
-    position: absolute;
-    left: 0;
-    top: 0;
-    width: 100%;
-    display: flex;
-    justify-content: center;
   }
 }

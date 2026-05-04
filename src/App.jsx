@@ -103,7 +103,7 @@ function PhotoboothApp() {
         if (activeFilter.id !== 'normal') {
           const imageData = context.getImageData(0, 0, cropWidth, cropHeight);
           const data = imageData.data;
-          
+
           for (let i = 0; i < data.length; i += 4) {
             let r = data[i];
             let g = data[i + 1];
@@ -112,25 +112,25 @@ function PhotoboothApp() {
             if (activeFilter.id === 'bw') {
               // grayscale(100%)
               let luma = 0.2126 * r + 0.7152 * g + 0.0722 * b;
-              
+
               // contrast(120%)
               luma = (luma - 128) * 1.2 + 128;
-              
+
               data[i] = data[i + 1] = data[i + 2] = luma;
             } else if (activeFilter.id === 'soft') {
               // brightness(110%)
               r *= 1.1; g *= 1.1; b *= 1.1;
-              
+
               // contrast(85%)
               r = (r - 128) * 0.85 + 128;
               g = (g - 128) * 0.85 + 128;
               b = (b - 128) * 0.85 + 128;
-              
+
               // sepia(20%)
               let tr = 0.393 * r + 0.769 * g + 0.189 * b;
               let tg = 0.349 * r + 0.686 * g + 0.168 * b;
               let tb = 0.272 * r + 0.534 * g + 0.131 * b;
-              
+
               data[i] = r * 0.8 + tr * 0.2;
               data[i + 1] = g * 0.8 + tg * 0.2;
               data[i + 2] = b * 0.8 + tb * 0.2;
@@ -190,7 +190,7 @@ function PhotoboothApp() {
   };
 
   return (
-    <div className="min-h-screen bg-[var(--color-bauhaus-white)] overflow-x-hidden flex flex-col">
+    <div className="min-h-screen print:min-h-0 bg-[var(--color-bauhaus-white)] overflow-x-hidden flex flex-col">
       <main
         className={`container mx-auto px-4 print:p-0 flex-1 flex justify-center py-8 ${view === 'camera' ? 'print:!h-auto print:!block' : ''}`}
         style={view === 'camera' ? { height: scaleInfo.height } : {}}
@@ -238,7 +238,7 @@ function PhotoboothApp() {
             <motion.div
               initial={{ opacity: 0, y: 50 }}
               animate={{ opacity: 1, y: 0 }}
-              className="w-full mx-auto flex flex-col lg:flex-row gap-8 lg:gap-16 justify-center items-center lg:items-start my-8"
+              className="w-full mx-auto flex flex-col lg:flex-row gap-8 lg:gap-16 justify-center items-center lg:items-start my-8 print:m-0"
             >
               {/* Left side: Photo Strip */}
               <div className="flex justify-center w-full lg:w-auto">
@@ -277,7 +277,9 @@ function PhotoboothApp() {
         </div>
       </main>
 
-      <Footer />
+      <div className="print:hidden">
+        <Footer />
+      </div>
     </div>
   );
 }
