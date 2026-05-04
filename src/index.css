@@ -13,7 +13,8 @@
   --color-bauhaus-sage: #c2c9a0;
 }
 
-html, body {
+html,
+body {
   margin: 0;
   padding: 0;
   background-color: var(--color-bauhaus-white);
@@ -33,9 +34,17 @@ body::after {
 }
 
 /* Photo filters */
-.filter-normal { filter: none; }
-.filter-bw { filter: grayscale(100%) contrast(120%); }
-.filter-soft { filter: brightness(110%) contrast(85%) sepia(20%); }
+.filter-normal {
+  filter: none;
+}
+
+.filter-bw {
+  filter: grayscale(100%) contrast(120%);
+}
+
+.filter-soft {
+  filter: brightness(110%) contrast(85%) sepia(20%);
+}
 
 /* Bauhaus Utility Classes */
 .bauhaus-border {
@@ -65,10 +74,21 @@ body::after {
 
 /* Print specific styles */
 @media print {
-  body {
-    background-color: white !important;
+  @page {
+    margin: 1cm;
+    size: auto;
   }
-  
+
+  html,
+  body {
+    height: 100vh;
+    min-height: 100vh;
+    background-color: white !important;
+    margin: 0;
+    padding: 0;
+    overflow: hidden;
+  }
+
   body::after {
     display: none;
   }
@@ -78,8 +98,12 @@ body::after {
     visibility: hidden;
   }
 
-  #print-area, #print-area * {
+  #print-area,
+  #print-area * {
     visibility: visible;
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
+    color-adjust: exact !important;
   }
 
   #print-area {

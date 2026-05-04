@@ -1,4 +1,4 @@
-import { useState, useRef } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import gifshot from 'gifshot';
 import { ThemeProvider, useTheme } from './context/ThemeContext';
@@ -16,6 +16,7 @@ function PhotoboothApp() {
 
   const videoRef = useRef(null);
   const canvasRef = useRef(null);
+  const mainRef = useRef(null);
 
   const [activeFilter, setActiveFilter] = useState({ id: 'normal', label: 'NORMAL', className: 'filter-normal' });
   const [photos, setPhotos] = useState([]);
@@ -23,6 +24,33 @@ function PhotoboothApp() {
   const [isSequenceRunning, setIsSequenceRunning] = useState(false);
   const [captureCount, setCaptureCount] = useState(0);
   const [view, setView] = useState('camera'); // 'camera' or 'result'
+  const [scaleInfo, setScaleInfo] = useState({ scale: 1, height: 'auto' });
+
+  // Dynamically scale the entire app content down to fit within the viewport height
+  useEffect(() => {
+    const updateScale = () => {
+      if (!mainRef.current) return;
+      // offsetHeight ignores CSS transform: scale, giving us the true original height
+      const originalHeight = mainRef.current.offsetHeight;
+      if (originalHeight === 0) return;
+
+      const availableHeight = window.innerHeight - 40; // leave 40px safe margin
+      if (originalHeight > availableHeight) {
+        const scale = availableHeight / originalHeight;
+        setScaleInfo({ scale, height: originalHeight * scale });
+      } else {
+        setScaleInfo({ scale: 1, height: 'auto' });
+      }
+    };
+
+    // Timeout allows DOM to render before calculating height
+    const timeoutId = setTimeout(updateScale, 50);
+    window.addEventListener('resize', updateScale);
+    return () => {
+      clearTimeout(timeoutId);
+      window.removeEventListener('resize', updateScale);
+    };
+  }, [view, photos, activeFilter]);
 
   const startCaptureSequence = () => {
     setPhotos([]);
@@ -104,7 +132,7 @@ function PhotoboothApp() {
 
   const downloadGIF = () => {
     if (photos.length === 0) return;
-    
+
     gifshot.createGIF({
       images: photos,
       gifWidth: 400,
@@ -124,13 +152,21 @@ function PhotoboothApp() {
   };
 
   return (
-    <div className="min-h-screen bg-[var(--color-bauhaus-white)] overflow-x-hidden">
+    <div className="min-h-screen bg-[var(--color-bauhaus-white)] overflow-x-hidden flex flex-col">
       {/* <Navbar /> */}
 
-      <main className="container mx-auto px-4 print:p-0">
-        {/* <HeroSection /> */}
+      <main 
+        className="container mx-auto px-4 print:p-0 flex-1 flex justify-center print:!h-auto print:!block"
+        style={{ height: scaleInfo.height }}
+      >
+        <div 
+          ref={mainRef}
+          className="w-full print:!transform-none"
+          style={{ transform: `scale(${scaleInfo.scale})`, transformOrigin: 'top center' }}
+        >
+          {/* <HeroSection /> */}
 
-        {view === 'camera' && (
+          {view === 'camera' && (
           <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
@@ -166,19 +202,19 @@ function PhotoboothApp() {
           <motion.div
             initial={{ opacity: 0, y: 50 }}
             animate={{ opacity: 1, y: 0 }}
-            className="w-full max-w-6xl mx-auto flex flex-col lg:flex-row gap-12 justify-center items-start my-8"
+            className="w-full mx-auto flex flex-col md:flex-row gap-8 md:gap-16 justify-center items-center my-8"
           >
             {/* Left side: Photo Strip */}
-            <div className="flex-1 flex justify-center lg:justify-end w-full">
+            <div className="flex justify-center">
               <PhotoStrip photos={photos} activeFilter={activeFilter} />
             </div>
 
             {/* Right side: Controls */}
-            <div className="flex-1 flex flex-col gap-8 justify-center lg:justify-start print:hidden mt-12 lg:mt-0 lg:pt-12 w-full max-w-md mx-auto lg:mx-0">
+            <div className="flex flex-col gap-8 justify-center print:hidden w-full max-w-sm">
               <BackgroundSwitcher />
 
               <div className="flex flex-col gap-6 w-full">
-                <button 
+                <button
                   onClick={downloadGIF}
                   className="bauhaus-button px-6 py-4 flex items-center justify-center gap-4 text-3xl bg-white w-full border-4 border-black"
                 >
@@ -202,6 +238,7 @@ function PhotoboothApp() {
             </div>
           </motion.div>
         )}
+        </div>
       </main>
 
       <Footer />
