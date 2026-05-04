@@ -26,10 +26,14 @@ function PhotoboothApp() {
   const [view, setView] = useState('camera'); // 'camera' or 'result'
   const [scaleInfo, setScaleInfo] = useState({ scale: 1, height: 'auto' });
 
-  // Dynamically scale the entire app content down to fit within the viewport height
+  // Dynamically scale the app content down to fit within the viewport height, 
+  // primarily used for the camera view to keep the snap button visible.
   useEffect(() => {
     const updateScale = () => {
-      if (!mainRef.current) return;
+      if (!mainRef.current || view !== 'camera') {
+        setScaleInfo({ scale: 1, height: 'auto' });
+        return;
+      }
       // offsetHeight ignores CSS transform: scale, giving us the true original height
       const originalHeight = mainRef.current.offsetHeight;
       if (originalHeight === 0) return;
@@ -89,17 +93,51 @@ function PhotoboothApp() {
 
         const context = canvas.getContext('2d');
 
-        // Apply the active CSS filter
-        if (activeFilter.id === 'bw') {
-          context.filter = 'grayscale(100%) contrast(120%)';
-        } else if (activeFilter.id === 'soft') {
-          context.filter = 'brightness(110%) contrast(85%) sepia(20%)';
-        } else {
-          context.filter = 'none';
-        }
+        // Reset filter to avoid iOS Safari bugs with context.filter
+        context.filter = 'none';
 
         // Draw and crop
         context.drawImage(video, offsetX, offsetY, cropWidth, cropHeight, 0, 0, cropWidth, cropHeight);
+
+        // Apply manual pixel filters for iOS Safari compatibility
+        if (activeFilter.id !== 'normal') {
+          const imageData = context.getImageData(0, 0, cropWidth, cropHeight);
+          const data = imageData.data;
+          
+          for (let i = 0; i < data.length; i += 4) {
+            let r = data[i];
+            let g = data[i + 1];
+            let b = data[i + 2];
+
+            if (activeFilter.id === 'bw') {
+              // grayscale(100%)
+              let luma = 0.2126 * r + 0.7152 * g + 0.0722 * b;
+              
+              // contrast(120%)
+              luma = (luma - 128) * 1.2 + 128;
+              
+              data[i] = data[i + 1] = data[i + 2] = luma;
+            } else if (activeFilter.id === 'soft') {
+              // brightness(110%)
+              r *= 1.1; g *= 1.1; b *= 1.1;
+              
+              // contrast(85%)
+              r = (r - 128) * 0.85 + 128;
+              g = (g - 128) * 0.85 + 128;
+              b = (b - 128) * 0.85 + 128;
+              
+              // sepia(20%)
+              let tr = 0.393 * r + 0.769 * g + 0.189 * b;
+              let tg = 0.349 * r + 0.686 * g + 0.168 * b;
+              let tb = 0.272 * r + 0.534 * g + 0.131 * b;
+              
+              data[i] = r * 0.8 + tr * 0.2;
+              data[i + 1] = g * 0.8 + tg * 0.2;
+              data[i + 2] = b * 0.8 + tb * 0.2;
+            }
+          }
+          context.putImageData(imageData, 0, 0);
+        }
 
         const dataUrl = canvas.toDataURL('image/jpeg', 0.9);
         setPhotos(prev => [...prev, dataUrl]);
@@ -154,13 +192,13 @@ function PhotoboothApp() {
   return (
     <div className="min-h-screen bg-[var(--color-bauhaus-white)] overflow-x-hidden flex flex-col">
       <main
-        className="container mx-auto px-4 print:p-0 flex-1 flex justify-center print:!h-auto print:!block"
-        style={{ height: scaleInfo.height }}
+        className={`container mx-auto px-4 print:p-0 flex-1 flex justify-center py-8 ${view === 'camera' ? 'print:!h-auto print:!block' : ''}`}
+        style={view === 'camera' ? { height: scaleInfo.height } : {}}
       >
         <div
           ref={mainRef}
           className="w-full print:!transform-none"
-          style={{ transform: `scale(${scaleInfo.scale})`, transformOrigin: 'top center' }}
+          style={view === 'camera' ? { transform: `scale(${scaleInfo.scale})`, transformOrigin: 'top center' } : {}}
         >
           {/* <HeroSection /> */}
 
@@ -200,18 +238,18 @@ function PhotoboothApp() {
             <motion.div
               initial={{ opacity: 0, y: 50 }}
               animate={{ opacity: 1, y: 0 }}
-              className="w-full mx-auto flex flex-col md:flex-row gap-8 md:gap-16 justify-center items-center my-8"
+              className="w-full mx-auto flex flex-col lg:flex-row gap-8 lg:gap-16 justify-center items-center lg:items-start my-8"
             >
               {/* Left side: Photo Strip */}
-              <div className="flex justify-center">
+              <div className="flex justify-center w-full lg:w-auto">
                 <PhotoStrip photos={photos} activeFilter={activeFilter} />
               </div>
 
               {/* Right side: Controls */}
-              <div className="flex flex-col gap-8 justify-center print:hidden w-full max-w-sm">
+              <div className="flex flex-col gap-6 lg:gap-8 justify-center print:hidden w-full max-w-sm lg:mt-12">
                 <BackgroundSwitcher />
 
-                <div className="flex flex-col gap-6 w-full">
+                <div className="flex flex-col gap-4 lg:gap-6 w-full">
                   <button
                     onClick={downloadGIF}
                     className="bauhaus-button px-6 py-4 flex items-center justify-center gap-4 text-3xl bg-white w-full border-4 border-black"

@@ -36,14 +36,17 @@ body::after {
 /* Photo filters */
 .filter-normal {
   filter: none;
+  -webkit-filter: none;
 }
 
 .filter-bw {
   filter: grayscale(100%) contrast(120%);
+  -webkit-filter: grayscale(100%) contrast(120%);
 }
 
 .filter-soft {
   filter: brightness(110%) contrast(85%) sepia(20%);
+  -webkit-filter: brightness(110%) contrast(85%) sepia(20%);
 }
 
 /* Bauhaus Utility Classes */
